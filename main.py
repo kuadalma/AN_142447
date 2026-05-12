@@ -22,21 +22,36 @@ def wczytaj_dane(plik):
 
     return dane
 
-def wizualizacja_wszystkich_y(dane):
-    for y, wartosci in dane.items():
-        plt.figure(figsize=(8, 4))
-        plt.plot(wartosci['x'], wartosci['fx'], "blue", label=f'F(x, y={y})')
-        plt.title(f"Przekrój funkcji F(x,y) dla y")
-        plt.xlabel("Współrzędna x")
-        plt.ylabel("Wartość funkcji F(x,y)")
+def wizualizacja(dane, packet_size = 6):
+    if packet_size <= 0:
+        return
+
+    y_list = list(dane.keys())
+    y_size = len(y_list)
+
+    for i in range(0, y_size, packet_size):
+        y_packet = y_list[i: i + packet_size]
+        plt.figure(figsize=(10, 6))
+
+        for y in y_packet:
+            plt.plot(dane[y]['x'], dane[y]['fx'], label=f'y={y}')
+
+        if packet_size == 1:
+            plt.title(f"Wykresy F(x,y) dla y = {y_packet[0]}")
+        else:
+            plt.title(f"Wykresy F(x,y) dla y od {y_packet[0]} do {y_packet[-1]}")
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+
+        plt.xlabel("x")
+        plt.ylabel("F(x,y)")
         plt.grid(True)
-        plt.legend()
+        plt.tight_layout()
         plt.show()
 
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
-wizualizacja_wszystkich_y(dane)
+wizualizacja(dane)
 
 # print("Znalezione unikalne linie y:")
 # print(len(list(dane.keys())))
