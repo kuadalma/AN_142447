@@ -135,7 +135,6 @@ def generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y, liczba_punktow=200
 
     return krzywa_x, krzywa_y
 
-
 def oblicz_wspolczynniki_lagrangea(oryginalne_x, oryginalne_y):
     wspolczynniki = []
     n = len(oryginalne_x)
@@ -151,7 +150,6 @@ def oblicz_wspolczynniki_lagrangea(oryginalne_x, oryginalne_y):
 
     return wspolczynniki
 
-
 def oblicz_wartosc_wielomianu(oryginalne_x, wspolczynniki, szukany_x):
     wynik = 0.0
     n = len(oryginalne_x)
@@ -165,15 +163,69 @@ def oblicz_wartosc_wielomianu(oryginalne_x, wspolczynniki, szukany_x):
 
     return wynik
 
-
 def wizualizacja_interpolacji_lagrangea(oryginalne_x, oryginalne_y, wybrane_y):
     krzywa_x, krzywa_y = generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y)
 
-    plt.figure(figsize=(12, 6))
-    plt.scatter(oryginalne_x, oryginalne_y, color="red", s=15,  label='Dane oryginalne')
-    plt.plot(krzywa_x, krzywa_y, 'b-', label="Wielomian Lagrange'a", linewidth=2)
+    plt.figure(figsize=(16, 10))
+    plt.scatter(oryginalne_x, oryginalne_y,  label='Dane oryginalne', color="red")
+    plt.plot(krzywa_x, krzywa_y, '-', label="Wielomian Lagrange'a", color="blue")
 
     plt.title(f"Interpolacja wielomianowa dla y = {wybrane_y}")
+    plt.xlabel("Współrzędna x")
+    plt.ylabel("Wartość F(x, y)")
+    plt.grid( linestyle='-', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+#interpolacja sklajna B-splajnow
+def oblicz_funkcje_bazowe(t):
+    b0 = ((1.0 - t) ** 3) / 6.0
+    b1 = (3.0 * (t ** 3) - 6.0 * (t ** 2) + 4.0) / 6.0
+    b2 = (-3.0 * (t ** 3) + 3.0 * (t ** 2) + 3.0 * t + 1.0) / 6.0
+    b3 = (t ** 3) / 6.0
+
+    return b0, b1, b2, b3
+
+def generuj_krzywa_bsplajn(x_nodes, y_nodes, n=20):
+    rozszerzone_x = [x_nodes[0]] * 2 + x_nodes + [x_nodes[-1]] * 2
+    rozszerzone_y = [y_nodes[0]] * 2 + y_nodes + [y_nodes[-1]] * 2
+
+    krzywa_x = []
+    krzywa_y = []
+    n = len(rozszerzone_x)
+
+    for i in range(1, n - 2):
+        for step in range(n):
+            t = step / float(n)
+
+            wartosc_x = oblicz_punkt_bsplajnu(
+                rozszerzone_x[i - 1], rozszerzone_x[i], rozszerzone_x[i + 1], rozszerzone_x[i + 2], t
+            )
+            wartosc_y = oblicz_punkt_bsplajnu(
+                rozszerzone_y[i - 1], rozszerzone_y[i], rozszerzone_y[i + 1], rozszerzone_y[i + 2], t
+            )
+
+            krzywa_x.append(wartosc_x)
+            krzywa_y.append(wartosc_y)
+
+    krzywa_x.append(x_nodes[-1])
+    krzywa_y.append(y_nodes[-1])
+
+    return krzywa_x, krzywa_y
+
+def oblicz_punkt_bsplajnu(p0, p1, p2, p3, t):
+    b0, b1, b2, b3 = oblicz_funkcje_bazowe(t)
+    return p0 * b0 + p1 * b1 + p2 * b2 + p3 * b3
+
+def wizualizacja_spline(original_x, original_y, selected_y):
+    curve_x, curve_y = generuj_krzywa_bsplajn(original_x, original_y)
+
+    plt.figure(figsize=(16, 10))
+    plt.scatter(original_x, original_y, label='Punkty kontrolne (Dane)', color="red")
+    plt.plot(curve_x, curve_y, '-', label='Krzywa B-sklejana (B-splajn)', color="blue")
+
+    plt.title(f"Aproksymacja B-splajnem dla y = {selected_y}")
     plt.xlabel("Współrzędna x")
     plt.ylabel("Wartość F(x, y)")
     plt.grid( linestyle='-', alpha=0.7)
@@ -184,7 +236,13 @@ def wizualizacja_interpolacji_lagrangea(oryginalne_x, oryginalne_y, wybrane_y):
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
-wizualizacja(dane)                                  #dane z pliku
-wizualizacja_statystyki(oblicz_statystyki(dane))    #statystyki
-wybrane_y = 0.5                                     #przykładowy y
-wizualizacja_interpolacji_lagrangea(dane[wybrane_y]['x'], dane[wybrane_y]['fx'], wybrane_y) #interpolacja Lagrange'a
+wizualizacja(dane)                                                      #dane z pliku
+wizualizacja_statystyki(oblicz_statystyki(dane))                        #statystyki
+
+#przykładowe dane do interpolacji
+wybrane_y = 0.5
+original_x = dane[wybrane_y]['x']
+original_y = dane[wybrane_y]['fx']
+
+wizualizacja_interpolacji_lagrangea(original_x, original_y, wybrane_y)  #interpolacja Lagrange'a
+wizualizacja_spline(original_x, original_y, wybrane_y)                  #interpolacja sklajna B-splajnow
