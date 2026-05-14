@@ -1,8 +1,8 @@
-#Projekt AN
+#Projekt AN 142447
 
-import numpy as np
 import matplotlib.pyplot as plt
 
+#wczytywanie danych
 def wczytaj_dane(plik):
     dane = {}
 
@@ -22,6 +22,7 @@ def wczytaj_dane(plik):
 
     return dane
 
+#wizualizacja danych
 def wizualizacja(dane, packet_size = 6):
     if packet_size <= 0:
         return
@@ -48,6 +49,7 @@ def wizualizacja(dane, packet_size = 6):
         plt.tight_layout()
         plt.show()
 
+#obliczanie statystyk z podzialem na wspolrzedne y
 def oblicz_statystyki(data):
     stats = {'y': [], 'srednia': [], 'mediana': [], 'odchylenie': []}
 
@@ -125,12 +127,3 @@ dane = wczytaj_dane(plik)
 
 wizualizacja(dane)
 wizualizacja_statystyki(oblicz_statystyki(dane))
-
-# print("Znalezione unikalne linie y:")
-# print(len(list(dane.keys())))
-#
-# x_dla_050 = dane[0.50]['x']
-# F_dla_050 = dane[0.50]['fx']
-#
-# print(f"\nDla y = 0.50 wczytano {len(x_dla_050)} punktów.")
-# print(f"Pierwszy x to: {x_dla_050[0]}, a jego F(x,y) to: {F_dla_050[0]}")
