@@ -48,10 +48,53 @@ def wizualizacja(dane, packet_size = 6):
         plt.tight_layout()
         plt.show()
 
+def oblicz_statystyki(data):
+    stats = {'y': [], 'srednia': [], 'mediana': [], 'odchylenie': []}
+
+    for y in sorted(data.keys()):
+        f_values = data[y]['F']
+
+        stats['y'].append(y)
+        stats['srednia'].append(oblicz_srednia(f_values))
+        stats['mediana'].append(oblicz_mediana(f_values))
+        stats['odchylenie'].append(oblicz_odchylenie_standardowe(f_values))
+
+    return stats
+
+def oblicz_srednia(values):
+    if not values:
+        return 0.0
+    return sum(values) / len(values)
+
+def oblicz_mediana(values):
+    if not values:
+        return 0.0
+
+    sorted_values = sorted(values)
+    n = len(sorted_values)
+    mid = n // 2
+
+    if n % 2 != 0:
+        return sorted_values[mid]
+
+    return (sorted_values[mid - 1] + sorted_values[mid]) / 2.0
+
+def oblicz_odchylenie_standardowe(values):
+    if not values:
+        return 0.0
+
+    n = len(values)
+    mean = sum(values) / n
+
+    variance = sum((x - mean) ** 2 for x in values) / n
+
+    return variance ** 0.5
+
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
 wizualizacja(dane)
+wyniki = oblicz_statystyki(dane)
 
 # print("Znalezione unikalne linie y:")
 # print(len(list(dane.keys())))
