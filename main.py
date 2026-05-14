@@ -122,8 +122,69 @@ def wizualizacja_statystyki(stats):
     plt.tight_layout()
     plt.show()
 
+#interpolacja wielomianowa Lagrange’a
+def generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y, liczba_punktow=200):
+    wspolczynniki = oblicz_wspolczynniki_lagrangea(oryginalne_x, oryginalne_y)
+
+    min_x = min(oryginalne_x)
+    max_x = max(oryginalne_x)
+    krok = (max_x - min_x) / (liczba_punktow - 1)
+
+    krzywa_x = [min_x + i * krok for i in range(liczba_punktow)]
+    krzywa_y = [oblicz_wartosc_wielomianu(oryginalne_x, wspolczynniki, x) for x in krzywa_x]
+
+    return krzywa_x, krzywa_y
+
+
+def oblicz_wspolczynniki_lagrangea(oryginalne_x, oryginalne_y):
+    wspolczynniki = []
+    n = len(oryginalne_x)
+
+    for i in range(n):
+        mianownik = 1.0
+        for j in range(n):
+            if i != j:
+                mianownik *= (oryginalne_x[i] - oryginalne_x[j])
+
+        a_i = oryginalne_y[i] / mianownik
+        wspolczynniki.append(a_i)
+
+    return wspolczynniki
+
+
+def oblicz_wartosc_wielomianu(oryginalne_x, wspolczynniki, szukany_x):
+    wynik = 0.0
+    n = len(oryginalne_x)
+
+    for i in range(n):
+        skladnik = wspolczynniki[i]
+        for j in range(n):
+            if i != j:
+                skladnik *= (szukany_x - oryginalne_x[j])
+        wynik += skladnik
+
+    return wynik
+
+
+def wizualizacja_interpolacji_lagrangea(oryginalne_x, oryginalne_y, wybrane_y):
+    krzywa_x, krzywa_y = generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y)
+
+    plt.figure(figsize=(12, 6))
+    plt.scatter(oryginalne_x, oryginalne_y, color="red", s=15,  label='Dane oryginalne')
+    plt.plot(krzywa_x, krzywa_y, 'b-', label="Wielomian Lagrange'a", linewidth=2)
+
+    plt.title(f"Interpolacja wielomianowa dla y = {wybrane_y}")
+    plt.xlabel("Współrzędna x")
+    plt.ylabel("Wartość F(x, y)")
+    plt.grid( linestyle='-', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
-wizualizacja(dane)
-wizualizacja_statystyki(oblicz_statystyki(dane))
+wizualizacja(dane)                                  #dane z pliku
+wizualizacja_statystyki(oblicz_statystyki(dane))    #statystyki
+wybrane_y = 0.5                                     #przykładowy y
+wizualizacja_interpolacji_lagrangea(dane[wybrane_y]['x'], dane[wybrane_y]['fx'], wybrane_y) #interpolacja Lagrange'a
