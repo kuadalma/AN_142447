@@ -223,11 +223,36 @@ def wizualizacja_spline(original_x, original_y, selected_y):
 
     plt.figure(figsize=(16, 10))
     plt.scatter(original_x, original_y, label='Punkty kontrolne (Dane)', color="red")
-    plt.plot(curve_x, curve_y, '-', label='Krzywa B-sklejana (B-splajn)', color="blue")
+    plt.plot(curve_x, curve_y, '-', label='Krzywa B-sklejana (B-splajn)', color="orange")
 
     plt.title(f"Aproksymacja B-splajnem dla y = {selected_y}")
     plt.xlabel("Współrzędna x")
     plt.ylabel("Wartość F(x, y)")
+    plt.grid( linestyle='-', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+#porownanie metod interpolacyjnych
+def wizualizacja_porownania_metod(oryginalne_x, oryginalne_y, wybrane_y):
+    lagrange_x, lagrange_y = generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y)
+    bsplajn_x, bsplajn_y = generuj_krzywa_bsplajn(oryginalne_x, oryginalne_y)
+
+    plt.figure(figsize=(16, 10))
+
+    plt.scatter(oryginalne_x, oryginalne_y, label='Dane oryginalne', zorder=3, color="red")
+    plt.plot(lagrange_x, lagrange_y, '-', label="Wielomian Lagrange'a", color="blue")
+    plt.plot(bsplajn_x, bsplajn_y, '-', label='Krzywa B-sklejana', color="orange")
+
+    plt.title(f"Porównanie metod interpolacji dla y = {wybrane_y}")
+    plt.xlabel("Współrzędna x")
+    plt.ylabel("Wartość F(x, y)")
+
+    min_y = min(oryginalne_y)
+    max_y = max(oryginalne_y)
+    margines = (max_y - min_y) * 0.5
+    plt.ylim(min_y - margines, max_y + margines)
+
     plt.grid( linestyle='-', alpha=0.7)
     plt.legend()
     plt.tight_layout()
@@ -246,3 +271,4 @@ original_y = dane[wybrane_y]['fx']
 
 wizualizacja_interpolacji_lagrangea(original_x, original_y, wybrane_y)  #interpolacja Lagrange'a
 wizualizacja_spline(original_x, original_y, wybrane_y)                  #interpolacja sklajna B-splajnow
+wizualizacja_porownania_metod(original_x, original_y, wybrane_y)        #porownanie danych interpolacyjnych
