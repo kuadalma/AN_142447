@@ -426,7 +426,6 @@ def oblicz_pochodne_roznice_skonczone(wezly_x, wezly_y):
 
     return pochodne
 
-
 def wizualizacja_pochodnych(oryginalne_x, oryginalne_y, wybrane_y):
     pochodne_dokladne = oblicz_pochodne_roznice_skonczone(oryginalne_x, oryginalne_y)
 
@@ -453,10 +452,76 @@ def wizualizacja_pochodnych(oryginalne_x, oryginalne_y, wybrane_y):
     plt.tight_layout()
     plt.show()
 
+#okreslanie monotonicznosci funkcji
+def wyznacz_przedzialy_monotonicznosci(wezly_x, pochodne, tolerancja=1e-5):
+    przedzialy_rosnace = []
+    przedzialy_malejace = []
+
+    poczatek_przedzialu = wezly_x[0]
+    aktualny_stan = "rosnie" if pochodne[0] > tolerancja else "maleje"
+
+    for i in range(1, len(wezly_x)):
+        stan = "rosnie" if pochodne[i] > tolerancja else "maleje"
+
+        if stan != aktualny_stan:
+            koniec_przedzialu = wezly_x[i]
+
+            if aktualny_stan == "rosnie":
+                przedzialy_rosnace.append((poczatek_przedzialu, koniec_przedzialu))
+            elif aktualny_stan == "maleje":
+                przedzialy_malejace.append((poczatek_przedzialu, koniec_przedzialu))
+
+            poczatek_przedzialu = koniec_przedzialu
+            aktualny_stan = stan
+
+    koniec_przedzialu = wezly_x[-1]
+    if poczatek_przedzialu != koniec_przedzialu:
+        if aktualny_stan == "rosnie":
+            przedzialy_rosnace.append((poczatek_przedzialu, koniec_przedzialu))
+        elif aktualny_stan == "maleje":
+            przedzialy_malejace.append((poczatek_przedzialu, koniec_przedzialu))
+
+    return przedzialy_rosnace, przedzialy_malejace
+
+
+def wizualizacja_monotonicznosci(oryginalne_x, oryginalne_y, wybrane_y):
+    pochodne = oblicz_pochodne_roznice_skonczone(oryginalne_x, oryginalne_y)
+    przedzialy_rosnace, przedzialy_malejace = wyznacz_przedzialy_monotonicznosci(oryginalne_x, pochodne)
+
+    print(f"\n--- Analiza Monotoniczności F(x, y={wybrane_y}) ---")
+    print("Funkcja JEST ROSNĄCA w przedziałach:")
+    for start, stop in przedzialy_rosnace:
+        print(f" x ∈ [{start:.3f}, {stop:.3f}]")
+
+    print("\nFunkcja JEST MALEJĄCA w przedziałach:")
+    for start, stop in przedzialy_malejace:
+        print(f" x ∈ [{start:.3f}, {stop:.3f}]")
+
+    plt.figure(figsize=(16, 10))
+    plt.plot(oryginalne_x, oryginalne_y, '-', label=f'Funkcja F(x, y={wybrane_y})', color="black")
+
+    for start, stop in przedzialy_rosnace:
+        plt.axvspan(start, stop, color='green', alpha=0.3,label='Przedział rosnący (F\' > 0)')
+
+    for start, stop in przedzialy_malejace:
+        plt.axvspan(start, stop, color='red', alpha=0.3,label='Przedział malejący (F\' < 0)')
+
+    plt.title(f"Przedziały monotoniczności funkcji,  y = {wybrane_y}")
+    plt.xlabel("Współrzędna x")
+    plt.ylabel("Wartość F(x, y)")
+    plt.grid(linestyle='-', alpha=0.5)
+
+    # Redukcja duplikatów
+    uchwyty, etykiety = plt.gca().get_legend_handles_labels()
+    unikalne_wpisy = dict(zip(etykiety, uchwyty))
+    plt.legend(unikalne_wpisy.values(), unikalne_wpisy.keys(), loc='best')
+    plt.tight_layout()
+    plt.show()
+
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
-wizualizacja(dane)                                      #dane z pliku
+wizualizacja(dane) #aby pokazać wszystkie (dane,41)     #dane z pliku
 wizualizacja_statystyki(oblicz_statystyki(dane))        #statystyki
 
 #przykładowe dane do interpolacji
@@ -470,3 +535,4 @@ wizualizacja_porownania_metod(original_x, original_y, wybrane_y)        #porowna
 wizualizacja_aproksymacji(original_x, original_y, wybrane_y)            #aproksymacja MNK i liniowa
 wizualizacja_wariantow_simpsona(original_x, original_y, wybrane_y)      #całkowanie numeryczne
 wizualizacja_pochodnych(original_x, original_y, wybrane_y)              #różniczkowanie numeryczne
+wizualizacja_monotonicznosci(original_x, original_y, wybrane_y)         #okreslanie monotonicznosci funkcji
