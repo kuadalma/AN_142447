@@ -258,6 +258,104 @@ def wizualizacja_porownania_metod(oryginalne_x, oryginalne_y, wybrane_y):
     plt.tight_layout()
     plt.show()
 
+# aproksymacja metoda najmniejszych kwadratow i liniowa
+def rozwiaz_uklad_gaussa(macierz, wektor):
+    rozmiar = len(wektor)
+    kopia_macierzy = [wiersz[:] for wiersz in macierz]
+    kopia_wektora = wektor[:]
+
+    for i in range(rozmiar):
+        maksymalny_indeks = i
+        for k in range(i + 1, rozmiar):
+            if abs(kopia_macierzy[k][i]) > abs(kopia_macierzy[maksymalny_indeks][i]):
+                maksymalny_indeks = k
+
+        kopia_macierzy[i], kopia_macierzy[maksymalny_indeks] = kopia_macierzy[maksymalny_indeks], kopia_macierzy[i]
+        kopia_wektora[i], kopia_wektora[maksymalny_indeks] = kopia_wektora[maksymalny_indeks], kopia_wektora[i]
+
+        for k in range(i + 1, rozmiar):
+            mnoznik = kopia_macierzy[k][i] / kopia_macierzy[i][i]
+            for j in range(i, rozmiar):
+                kopia_macierzy[k][j] -= mnoznik * kopia_macierzy[i][j]
+            kopia_wektora[k] -= mnoznik * kopia_wektora[i]
+
+    wyniki = [0.0] * rozmiar
+    for i in range(rozmiar - 1, -1, -1):
+        suma_wielomianu = sum(kopia_macierzy[i][j] * wyniki[j] for j in range(i + 1, rozmiar))
+        wyniki[i] = (kopia_wektora[i] - suma_wielomianu) / kopia_macierzy[i][i]
+
+    return wyniki
+
+def wyznacz_wspolczynniki_mnk(oryginalne_x, oryginalne_y, stopien):
+    rozmiar_ukladu = stopien + 1
+    macierz_normalna = [[0.0] * rozmiar_ukladu for _ in range(rozmiar_ukladu)]
+    wektor_wyrazow = [0.0] * rozmiar_ukladu
+
+    for i in range(rozmiar_ukladu):
+        for j in range(rozmiar_ukladu):
+            macierz_normalna[i][j] = sum(x ** (i + j) for x in oryginalne_x)
+        wektor_wyrazow[i] = sum(y * (x ** i) for x, y in zip(oryginalne_x, oryginalne_y))
+
+    return rozwiaz_uklad_gaussa(macierz_normalna, wektor_wyrazow)
+
+def oblicz_wartosc_wielomianu_aproksymacyjnego(wspolczynniki, szukany_x):
+    return sum(wspolczynnik * (szukany_x ** indeks) for indeks, wspolczynnik in enumerate(wspolczynniki))
+
+def oblicz_miary_bledu(rzeczywiste_y, przewidywane_y):
+    liczba_punktow = len(rzeczywiste_y)
+    srednia_y = sum(rzeczywiste_y) / liczba_punktow
+
+    suma_kwadratow_resztek = sum((r - p) ** 2 for r, p in zip(rzeczywiste_y, przewidywane_y))
+    calkowita_suma_kwadratow = sum((r - srednia_y) ** 2 for r in rzeczywiste_y)
+
+    rmse = (suma_kwadratow_resztek / liczba_punktow) ** 0.5
+    r2 = 1.0 - (suma_kwadratow_resztek / calkowita_suma_kwadratow) if calkowita_suma_kwadratow != 0 else 0.0
+
+    return rmse, r2
+
+def generuj_krzywa_aproksymacyjna(wspolczynniki, oryginalne_x, liczba_punktow=200):
+    min_x = min(oryginalne_x)
+    max_x = max(oryginalne_x)
+    krok = (max_x - min_x) / (liczba_punktow - 1)
+
+    krzywa_x = [min_x + i * krok for i in range(liczba_punktow)]
+    krzywa_y = [oblicz_wartosc_wielomianu_aproksymacyjnego(wspolczynniki, x) for x in krzywa_x]
+
+    return krzywa_x, krzywa_y
+
+def wizualizacja_aproksymacji(oryginalne_x, oryginalne_y, wybrane_y):
+    stopien_nieliniowy = 3
+
+    wspolczynniki_liniowe = wyznacz_wspolczynniki_mnk(oryginalne_x, oryginalne_y, 1)
+    wspolczynniki_nieliniowe = wyznacz_wspolczynniki_mnk(oryginalne_x, oryginalne_y, stopien_nieliniowy)
+
+    przewidywane_liniowe = [oblicz_wartosc_wielomianu_aproksymacyjnego(wspolczynniki_liniowe, x) for x in oryginalne_x]
+    przewidywane_nieliniowe = [oblicz_wartosc_wielomianu_aproksymacyjnego(wspolczynniki_nieliniowe, x) for x in
+                               oryginalne_x]
+
+    rmse_lin, r2_lin = oblicz_miary_bledu(oryginalne_y, przewidywane_liniowe)
+    rmse_nielin, r2_nielin = oblicz_miary_bledu(oryginalne_y, przewidywane_nieliniowe)
+
+    print(f"\n--- Błędy Aproksymacji dla y = {wybrane_y} ---")
+    print(f"Model liniowy (stopień 1): RMSE = {rmse_lin:.4f}, R^2 = {r2_lin:.4f}")
+    print(f"Model nieliniowy (stopień {stopien_nieliniowy}): RMSE = {rmse_nielin:.4f}, R^2 = {r2_nielin:.4f}")
+
+    x_lin, y_lin = generuj_krzywa_aproksymacyjna(wspolczynniki_liniowe, oryginalne_x)
+    x_nielin, y_nielin = generuj_krzywa_aproksymacyjna(wspolczynniki_nieliniowe, oryginalne_x)
+
+    plt.figure(figsize=(16, 10))
+    plt.scatter(oryginalne_x, oryginalne_y, label='Dane oryginalne', zorder=3, color="red")
+    plt.plot(x_lin, y_lin, '-', label=f'Model liniowy', color="blue")
+    plt.plot(x_nielin, y_nielin, '-', label=f'Model sześcienny', color="orange")
+
+    plt.title(f"Aproksymacja dla y = {wybrane_y}")
+    plt.xlabel("Współrzędna x")
+    plt.ylabel("Wartość F(x, y)")
+    plt.grid(linestyle='-', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
@@ -272,3 +370,4 @@ original_y = dane[wybrane_y]['fx']
 wizualizacja_interpolacji_lagrangea(original_x, original_y, wybrane_y)  #interpolacja Lagrange'a
 wizualizacja_spline(original_x, original_y, wybrane_y)                  #interpolacja sklajna B-splajnow
 wizualizacja_porownania_metod(original_x, original_y, wybrane_y)        #porownanie danych interpolacyjnych
+wizualizacja_aproksymacji(original_x, original_y, wybrane_y)            #aproksymacja MNK i liniowa
