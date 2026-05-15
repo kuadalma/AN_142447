@@ -356,11 +356,65 @@ def wizualizacja_aproksymacji(oryginalne_x, oryginalne_y, wybrane_y):
     plt.tight_layout()
     plt.show()
 
+# całkowanie numeryczne
+def oblicz_calke_simpsona(wezly_x, wezly_y):
+    liczba_przedzialow = len(wezly_x) - 1
+
+    krok_h = (wezly_x[-1] - wezly_x[0]) / liczba_przedzialow
+    calka = wezly_y[0] + wezly_y[-1]
+
+    for i in range(1, liczba_przedzialow):
+        if i % 2 == 0:
+            calka += 2.0 * wezly_y[i]
+        else:
+            calka += 4.0 * wezly_y[i]
+
+    return calka * (krok_h / 3.0)
+
+
+def wizualizacja_wariantow_simpsona(oryginalne_x, oryginalne_y, wybrane_y):
+    calka_dokladna = oblicz_calke_simpsona(oryginalne_x, oryginalne_y)
+
+    skok = 4
+    szybkie_x = oryginalne_x[::skok]
+    szybkie_y = oryginalne_y[::skok]
+    calka_szybka = oblicz_calke_simpsona(szybkie_x, szybkie_y)
+
+    print(f"\n--- Całkowanie (Metoda Simpsona) dla y = {wybrane_y} ---")
+    print(f"1. Wariant dokładny (przedziały: {len(oryginalne_x) - 1}): Pole = {calka_dokladna:.6f}")
+    print(f"2. Wariant szybki (przedziały: {len(szybkie_x) - 1}): Pole = {calka_szybka:.6f}")
+    print(f"Różnica w polu powierzchni: {abs(calka_dokladna - calka_szybka):.6f}")
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 10))
+
+    # Wykres Dokładny (mniejszy krok)
+    ax1.plot(oryginalne_x, oryginalne_y, '--', alpha=0.3, label='Kształt rzeczywisty', color="red")
+    ax1.fill_between(oryginalne_x, 0, oryginalne_y, color="lightblue", alpha=0.5)
+    ax1.plot(oryginalne_x, oryginalne_y, '-', label=f'calka dokladna (Pole = {calka_dokladna:.3f})', color="blue")
+    ax1.set_title("Wariant Dokładny (krok=1)")
+    ax1.set_xlabel("Współrzędna x")
+    ax1.set_ylabel("Wartość F(x, y)")
+    ax1.grid(linestyle='-', alpha=0.7)
+    ax1.legend()
+
+    # Wykres Szybki (większy krok)
+    ax2.plot(oryginalne_x, oryginalne_y, '--', alpha=0.3, label='Kształt rzeczywisty', color="red")
+    ax2.fill_between(szybkie_x, 0, szybkie_y, color="lightgreen", alpha=0.5)
+    ax2.plot(szybkie_x, szybkie_y, '-', label=f'Duży krok (Pole = {calka_szybka:.3f})', color="green")
+    ax2.set_title("Wariant Szybki (krok=4")
+    ax2.set_xlabel("Współrzędna x")
+    ax2.grid(linestyle='-', alpha=0.7)
+    ax2.legend()
+
+    plt.suptitle(f"Porównanie dokładności całkowania numerycznego dla y = {wybrane_y}", fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
-wizualizacja(dane)                                                      #dane z pliku
-wizualizacja_statystyki(oblicz_statystyki(dane))                        #statystyki
+wizualizacja(dane)                                      #dane z pliku
+wizualizacja_statystyki(oblicz_statystyki(dane))        #statystyki
 
 #przykładowe dane do interpolacji
 wybrane_y = 0.5
@@ -371,3 +425,4 @@ wizualizacja_interpolacji_lagrangea(original_x, original_y, wybrane_y)  #interpo
 wizualizacja_spline(original_x, original_y, wybrane_y)                  #interpolacja sklajna B-splajnow
 wizualizacja_porownania_metod(original_x, original_y, wybrane_y)        #porownanie danych interpolacyjnych
 wizualizacja_aproksymacji(original_x, original_y, wybrane_y)            #aproksymacja MNK i liniowa
+wizualizacja_wariantow_simpsona(original_x, original_y, wybrane_y)      #całkowanie numeryczne
