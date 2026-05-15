@@ -371,7 +371,6 @@ def oblicz_calke_simpsona(wezly_x, wezly_y):
 
     return calka * (krok_h / 3.0)
 
-
 def wizualizacja_wariantow_simpsona(oryginalne_x, oryginalne_y, wybrane_y):
     calka_dokladna = oblicz_calke_simpsona(oryginalne_x, oryginalne_y)
 
@@ -410,6 +409,50 @@ def wizualizacja_wariantow_simpsona(oryginalne_x, oryginalne_y, wybrane_y):
     plt.tight_layout()
     plt.show()
 
+# różniczkowanie numeryczne
+def oblicz_pochodne_roznice_skonczone(wezly_x, wezly_y):
+    liczba_punktow = len(wezly_x)
+    pochodne = [0.0] * liczba_punktow
+
+    krok_poczatek = wezly_x[1] - wezly_x[0]
+    pochodne[0] = (wezly_y[1] - wezly_y[0]) / krok_poczatek
+
+    for i in range(1, liczba_punktow - 1):
+        krok_calkowity = wezly_x[i + 1] - wezly_x[i - 1]
+        pochodne[i] = (wezly_y[i + 1] - wezly_y[i - 1]) / krok_calkowity
+
+    krok_koniec = wezly_x[-1] - wezly_x[-2]
+    pochodne[-1] = (wezly_y[-1] - wezly_y[-2]) / krok_koniec
+
+    return pochodne
+
+
+def wizualizacja_pochodnych(oryginalne_x, oryginalne_y, wybrane_y):
+    pochodne_dokladne = oblicz_pochodne_roznice_skonczone(oryginalne_x, oryginalne_y)
+
+    zgrubne_x = oryginalne_x[::2]
+    zgrubne_y = oryginalne_y[::2]
+    pochodne_zgrubne = oblicz_pochodne_roznice_skonczone(zgrubne_x, zgrubne_y)
+
+    print(f"\n--- Analiza Różniczkowania na wspólnym wykresie dla y = {wybrane_y} ---")
+    print(
+        f"Krok dokładny (h={oryginalne_x[1] - oryginalne_x[0]:.2f}): Średnia zmiana pochodnej = {sum(pochodne_dokladne) / len(pochodne_dokladne):.4f}")
+    print(
+        f"Krok zgrubny  (h={zgrubne_x[1] - zgrubne_x[0]:.2f}): Średnia zmiana pochodnej = {sum(pochodne_zgrubne) / len(pochodne_zgrubne):.4f}")
+
+    plt.figure(figsize=(16, 10))
+    plt.plot(oryginalne_x, oryginalne_y, '-', label=f'Funkcja bazowa F(x, y={wybrane_y})')
+    plt.plot(oryginalne_x, pochodne_dokladne, '-', label=f"Pochodna F'(x) (krok dokładny)")
+    plt.plot(zgrubne_x, pochodne_zgrubne, '--', label=f"Pochodna F'(x) (podwójny krok)", alpha=0.8)
+
+    plt.title(f"Funkcja i jej pochodne kierunkowe na wspólnym wykresie dla y = {wybrane_y}")
+    plt.xlabel("Współrzędna x")
+    plt.ylabel("Wartość")
+    plt.grid(linestyle='-', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 plik = 'Dane/142447.txt'
 dane = wczytaj_dane(plik)
 
@@ -426,3 +469,4 @@ wizualizacja_spline(original_x, original_y, wybrane_y)                  #interpo
 wizualizacja_porownania_metod(original_x, original_y, wybrane_y)        #porownanie danych interpolacyjnych
 wizualizacja_aproksymacji(original_x, original_y, wybrane_y)            #aproksymacja MNK i liniowa
 wizualizacja_wariantow_simpsona(original_x, original_y, wybrane_y)      #całkowanie numeryczne
+wizualizacja_pochodnych(original_x, original_y, wybrane_y)              #różniczkowanie numeryczne
