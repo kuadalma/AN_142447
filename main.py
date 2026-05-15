@@ -22,6 +22,7 @@ def wczytaj_dane(plik):
 
     return dane
 
+
 #wizualizacja danych
 def wizualizacja(dane, packet_size = 6):
     if packet_size <= 0:
@@ -29,6 +30,10 @@ def wizualizacja(dane, packet_size = 6):
 
     y_list = list(dane.keys())
     y_size = len(y_list)
+
+    print("\n--- Zadanie 2.1: Wizualizacja danych oryginalnych ---")
+    print(f"Liczba analizowanych przekrojów y: {y_size}")
+    print(f"Generowanie wykresów (pakiety po {packet_size} linii)...")
 
     for i in range(0, y_size, packet_size):
         y_packet = y_list[i: i + packet_size]
@@ -48,6 +53,7 @@ def wizualizacja(dane, packet_size = 6):
         plt.grid(True)
         plt.tight_layout()
         plt.show()
+
 
 #obliczanie statystyk z podzialem na wspolrzedne y
 def oblicz_statystyki(data):
@@ -93,6 +99,11 @@ def oblicz_odchylenie_standardowe(values):
     return variance ** 0.5
 
 def wizualizacja_statystyki(stats):
+    print("\n--- Zadanie 2.2: Statystyki F(x,y) dla poszczególnych przekrojów ---")
+    for i in range(len(stats['y'])):
+        print(
+            f"y = {stats['y'][i]:.2f} | Średnia: {stats['srednia'][i]:.4f} | Mediana: {stats['mediana'][i]:.4f} | Odchylenie std: {stats['odchylenie'][i]:.4f}")
+
     y_labels = stats['y']
     srednia = stats['srednia']
     mediana = stats['mediana']
@@ -121,6 +132,7 @@ def wizualizacja_statystyki(stats):
     plt.grid(axis='y', linestyle='-', alpha=0.7)
     plt.tight_layout()
     plt.show()
+
 
 #interpolacja wielomianowa Lagrange’a
 def generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y, liczba_punktow=200):
@@ -164,6 +176,10 @@ def oblicz_wartosc_wielomianu(oryginalne_x, wspolczynniki, szukany_x):
     return wynik
 
 def wizualizacja_interpolacji_lagrangea(oryginalne_x, oryginalne_y, wybrane_y):
+    print(f"\n--- Zadanie 2.3: Interpolacja Wielomianowa Lagrange'a ---")
+    print(f"Wybrany przekrój: y = {wybrane_y}")
+    print(f"Przetwarzanie {len(oryginalne_x)} węzłów bazowych do wyznaczenia wielomianu globalnego...")
+
     krzywa_x, krzywa_y = generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y)
 
     plt.figure(figsize=(16, 10))
@@ -177,6 +193,7 @@ def wizualizacja_interpolacji_lagrangea(oryginalne_x, oryginalne_y, wybrane_y):
     plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 #interpolacja sklajna B-splajnow
 def oblicz_funkcje_bazowe(t):
@@ -219,6 +236,10 @@ def oblicz_punkt_bsplajnu(p0, p1, p2, p3, t):
     return p0 * b0 + p1 * b1 + p2 * b2 + p3 * b3
 
 def wizualizacja_spline(original_x, original_y, selected_y):
+    print(f"\n--- Zadanie 2.4: Aproksymacja B-splajnem ---")
+    print(f"Wybrany przekrój: y = {selected_y}")
+    print("Generowanie wygładzonej krzywej sklejanej (B-splajn 3. stopnia) z clampingiem brzegowym...")
+
     curve_x, curve_y = generuj_krzywa_bsplajn(original_x, original_y)
 
     plt.figure(figsize=(16, 10))
@@ -233,8 +254,13 @@ def wizualizacja_spline(original_x, original_y, selected_y):
     plt.tight_layout()
     plt.show()
 
+
 #porownanie metod interpolacyjnych
 def wizualizacja_porownania_metod(oryginalne_x, oryginalne_y, wybrane_y):
+    print(f"\n--- Zadanie 2.5: Porównanie metod interpolacyjnych ---")
+    print(f"Analiza dla y = {wybrane_y}")
+    print("Generowanie wspólnego układu współrzędnych do oceny błędu Rungego na brzegach przedziału...")
+
     lagrange_x, lagrange_y = generuj_krzywa_interpolacyjna(oryginalne_x, oryginalne_y)
     bsplajn_x, bsplajn_y = generuj_krzywa_bsplajn(oryginalne_x, oryginalne_y)
 
@@ -257,6 +283,7 @@ def wizualizacja_porownania_metod(oryginalne_x, oryginalne_y, wybrane_y):
     plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 # aproksymacja metoda najmniejszych kwadratow i liniowa
 def rozwiaz_uklad_gaussa(macierz, wektor):
@@ -336,7 +363,8 @@ def wizualizacja_aproksymacji(oryginalne_x, oryginalne_y, wybrane_y):
     rmse_lin, r2_lin = oblicz_miary_bledu(oryginalne_y, przewidywane_liniowe)
     rmse_nielin, r2_nielin = oblicz_miary_bledu(oryginalne_y, przewidywane_nieliniowe)
 
-    print(f"\n--- Błędy Aproksymacji dla y = {wybrane_y} ---")
+    print(f"\n--- Zadanie 2.6: Aproksymacja Metodą Najmniejszych Kwadratów (MNK) ---")
+    print(f"Wybrany przekrój: y = {wybrane_y}")
     print(f"Model liniowy (stopień 1): RMSE = {rmse_lin:.4f}, R^2 = {r2_lin:.4f}")
     print(f"Model nieliniowy (stopień {stopien_nieliniowy}): RMSE = {rmse_nielin:.4f}, R^2 = {r2_nielin:.4f}")
 
@@ -356,6 +384,7 @@ def wizualizacja_aproksymacji(oryginalne_x, oryginalne_y, wybrane_y):
     plt.tight_layout()
     plt.show()
 
+
 # całkowanie numeryczne
 def oblicz_calke_simpsona(wezly_x, wezly_y):
     liczba_przedzialow = len(wezly_x) - 1
@@ -372,6 +401,8 @@ def oblicz_calke_simpsona(wezly_x, wezly_y):
     return calka * (krok_h / 3.0)
 
 def wizualizacja_wariantow_simpsona(oryginalne_x, oryginalne_y, wybrane_y):
+
+
     calka_dokladna = oblicz_calke_simpsona(oryginalne_x, oryginalne_y)
 
     skok = 4
@@ -379,7 +410,8 @@ def wizualizacja_wariantow_simpsona(oryginalne_x, oryginalne_y, wybrane_y):
     szybkie_y = oryginalne_y[::skok]
     calka_szybka = oblicz_calke_simpsona(szybkie_x, szybkie_y)
 
-    print(f"\n--- Całkowanie (Metoda Simpsona) dla y = {wybrane_y} ---")
+    print(f"\n--- Zadanie 2.7: Całkowanie Numeryczne (Metoda Simpsona) ---")
+    print(f"Wybrany przekrój: y = {wybrane_y}")
     print(f"1. Wariant dokładny (przedziały: {len(oryginalne_x) - 1}): Pole = {calka_dokladna:.6f}")
     print(f"2. Wariant szybki (przedziały: {len(szybkie_x) - 1}): Pole = {calka_szybka:.6f}")
     print(f"Różnica w polu powierzchni: {abs(calka_dokladna - calka_szybka):.6f}")
@@ -409,6 +441,7 @@ def wizualizacja_wariantow_simpsona(oryginalne_x, oryginalne_y, wybrane_y):
     plt.tight_layout()
     plt.show()
 
+
 # różniczkowanie numeryczne
 def oblicz_pochodne_roznice_skonczone(wezly_x, wezly_y):
     liczba_punktow = len(wezly_x)
@@ -433,7 +466,8 @@ def wizualizacja_pochodnych(oryginalne_x, oryginalne_y, wybrane_y):
     zgrubne_y = oryginalne_y[::2]
     pochodne_zgrubne = oblicz_pochodne_roznice_skonczone(zgrubne_x, zgrubne_y)
 
-    print(f"\n--- Analiza Różniczkowania na wspólnym wykresie dla y = {wybrane_y} ---")
+    print(f"\n--- Zadanie 2.8: Różniczkowanie Numeryczne (Różnice Skończone) ---")
+    print(f"Wybrany przekrój: y = {wybrane_y}")
     print(
         f"Krok dokładny (h={oryginalne_x[1] - oryginalne_x[0]:.2f}): Średnia zmiana pochodnej = {sum(pochodne_dokladne) / len(pochodne_dokladne):.4f}")
     print(
@@ -451,6 +485,7 @@ def wizualizacja_pochodnych(oryginalne_x, oryginalne_y, wybrane_y):
     plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 #okreslanie monotonicznosci funkcji
 def wyznacz_przedzialy_monotonicznosci(wezly_x, pochodne, tolerancja=1e-5):
@@ -483,19 +518,19 @@ def wyznacz_przedzialy_monotonicznosci(wezly_x, pochodne, tolerancja=1e-5):
 
     return przedzialy_rosnace, przedzialy_malejace
 
-
 def wizualizacja_monotonicznosci(oryginalne_x, oryginalne_y, wybrane_y):
     pochodne = oblicz_pochodne_roznice_skonczone(oryginalne_x, oryginalne_y)
     przedzialy_rosnace, przedzialy_malejace = wyznacz_przedzialy_monotonicznosci(oryginalne_x, pochodne)
 
-    print(f"\n--- Analiza Monotoniczności F(x, y={wybrane_y}) ---")
+    print(f"\n--- Zadanie 2.9: Określenie Monotoniczności Funkcji ---")
+    print(f"Wybrany przekrój: y = {wybrane_y}")
     print("Funkcja JEST ROSNĄCA w przedziałach:")
     for start, stop in przedzialy_rosnace:
-        print(f" x ∈ [{start:.3f}, {stop:.3f}]")
+        print(f"   x ∈ [{start:.3f}, {stop:.3f}]")
 
-    print("\nFunkcja JEST MALEJĄCA w przedziałach:")
+    print("Funkcja JEST MALEJĄCA w przedziałach:")
     for start, stop in przedzialy_malejace:
-        print(f" x ∈ [{start:.3f}, {stop:.3f}]")
+        print(f"   x ∈ [{start:.3f}, {stop:.3f}]")
 
     plt.figure(figsize=(16, 10))
     plt.plot(oryginalne_x, oryginalne_y, '-', label=f'Funkcja F(x, y={wybrane_y})', color="black")
